@@ -128,6 +128,7 @@ int main(){
     std::vector<float> sin_table, cos_table;
     recalc_trig(sin_table, cos_table, n_plane);
 
+    bool menu = 0;
     while (window.isOpen()){
         sf::Event event;
 
