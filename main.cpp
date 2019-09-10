@@ -52,6 +52,14 @@ void recalc_trig(std::vector<float>& sin_table, std::vector<float>& cos_table, c
     }
 }
 
+float calc_slider_rgb(const sf::RectangleShape& r, const sf::RectangleShape& sl){
+    return ((255 / (r.getSize().y - 20)) * (r.getPosition().y + r.getSize().y - sl.getPosition().y - 20));
+} 
+
+float calc_slider_th(const sf::RectangleShape& r, const sf::RectangleShape& sl){
+    return (1 + (39 / (r.getSize().x - 10)) * (sl.getPosition().x - r.getPosition().x));
+}
+
 int main(){
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Symmetry");
     window.setFramerateLimit(60);
@@ -104,7 +112,7 @@ int main(){
     palette_sprite.setTexture(palette_texture);
     palette_sprite.setOrigin(palette_img.getSize().x / 2, palette_img.getSize().y / 2);
     palette_sprite.setScale(0.2, 0.2);
-    palette_sprite.setPosition(145, 30);
+    palette_sprite.setPosition(40, 80);
 
     sf::Vector2i pos_crsr;
     bool left_m_clicked = 0;
@@ -125,11 +133,11 @@ int main(){
     std::vector<float> sin_table, cos_table;
     recalc_trig(sin_table, cos_table, n_plane);
 
-    build_menu();
-    bool show_menu = 0;
-
     sf::Color line_color = sf::Color::Black;
     int line_th = 5;
+
+    build_menu(line_color);
+    bool show_menu = 0;
 
     bool th_slider_move = 0;
     bool r_slider_move = 0, g_slider_move = 0, b_slider_move = 0;
@@ -154,11 +162,54 @@ int main(){
             minus_text.setOutlineThickness(0);
             plus_text.setOutlineThickness(0);
         }
+        if (show_menu){
+            palette_sprite.rotate(0.5);
+        }
+        else if (palette_sprite.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+            palette_sprite.setScale(0.35, 0.35);
+            palette_sprite.rotate(0.5);
+        }
+        else{
+            palette_sprite.setScale(0.25, 0.25);
+        }    
 
-        if (palette_sprite.getGlobalBounds().contains((sf::Vector2f)pos_crsr))
-            palette_sprite.setScale(0.3, 0.3);
-        else
-            palette_sprite.setScale(0.2, 0.2);
+        if (show_menu){
+            if (r_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+                r_slider.setOutlineColor(sf::Color(128, 170, 255));
+                r_slider.setOutlineThickness(4);
+            }
+            else{
+                r_slider.setOutlineColor(sf::Color(160, 160, 160));
+                r_slider.setOutlineThickness(2);
+            }
+
+            if (g_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+                g_slider.setOutlineColor(sf::Color(128, 170, 255));
+                g_slider.setOutlineThickness(4);
+            }
+            else{
+                g_slider.setOutlineColor(sf::Color(160, 160, 160));
+                g_slider.setOutlineThickness(2);
+            }
+
+            if (b_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+                b_slider.setOutlineColor(sf::Color(128, 170, 255));
+                b_slider.setOutlineThickness(4);
+            }
+            else{
+                b_slider.setOutlineColor(sf::Color(160, 160, 160));
+                b_slider.setOutlineThickness(2);
+            }
+
+            if (th_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+                th_slider.setOutlineColor(sf::Color(128, 170, 255));
+                th_slider.setOutlineThickness(4);
+            }
+            else{
+                th_slider.setOutlineColor(sf::Color::Black);
+                th_slider.setOutlineThickness(3);
+            }
+        }
 
         // std::cout << pos_crsr.x << " " << pos_crsr.y << '\n';
             
@@ -189,18 +240,15 @@ int main(){
 
                     if (show_menu && menu_rect.getGlobalBounds().contains(pos_t)){
                         if (r_rect.getGlobalBounds().contains(pos_t)){
-                            r_slider.setPosition(r_slider.getPosition().x, pos_t.y);
                             r_slider_move = 1;
                         }
                         else if (g_rect.getGlobalBounds().contains(pos_t)){
-                            g_slider.setPosition(g_slider.getPosition().x, pos_t.y);
                             g_slider_move = 1;
                         }
                         else if (b_rect.getGlobalBounds().contains(pos_t)){
-                            b_slider.setPosition(b_slider.getPosition().x, pos_t.y);
                             b_slider_move = 1;
-                        }else if (th_rect.getGlobalBounds().contains(pos_t)){
-                            th_slider.setPosition(pos_t.x, th_slider.getPosition().y);
+                        }
+                        else if (th_rect.getGlobalBounds().contains(pos_t)){
                             th_slider_move = 1;
                         }
                     }
@@ -245,18 +293,25 @@ int main(){
                 y_rgb = std::min(y_rgb, (int)menu_rect.getPosition().y + MENU_HEIGHT - 40);
                 if (r_slider_move){
                     r_slider.setPosition(r_slider.getPosition().x, y_rgb);
+                    line_color.r = calc_slider_rgb(r_rect, r_slider);
                 }
                 else if (g_slider_move){
                     g_slider.setPosition(g_slider.getPosition().x, y_rgb);
+                    line_color.g = calc_slider_rgb(g_rect, g_slider);
                 }
                 else if (b_slider_move){
                     b_slider.setPosition(b_slider.getPosition().x, y_rgb);
+                    line_color.b = calc_slider_rgb(b_rect, b_slider);
                 }
                 else if (th_slider_move){
                     int x_th = std::max(pos_crsr.x, (int)menu_rect.getPosition().x + 240);
                     x_th = std::min(x_th, (int)menu_rect.getPosition().x + 470);
                     th_slider.setPosition(x_th, th_slider.getPosition().y);
+                    line_th = calc_slider_th(th_rect, th_slider);
                 }
+                rgb_circle.setRadius(line_th);
+                rgb_circle.setOrigin(line_th, line_th);
+                rgb_circle.setFillColor(line_color);
             }
         }
         

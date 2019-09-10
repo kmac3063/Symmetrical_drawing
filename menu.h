@@ -11,7 +11,7 @@ sf::RectangleShape r_slider, g_slider, b_slider, th_slider;
 sf::CircleShape rgb_circle;
 sf::Color rgb;
 
-void build_menu(){
+void build_menu(const sf::Color& c){
     blind_rect.setPosition(0, 0);
     blind_rect.setFillColor(sf::Color(160, 160, 160, 150));
 
@@ -39,13 +39,16 @@ void build_menu(){
     r_slider.setFillColor(sf::Color::Black);
     r_slider.setOutlineColor(sf::Color(160, 160, 160));
     r_slider.setOutlineThickness(2);
-    r_slider.setPosition(x + 15, y + 50);
+    r_slider.setPosition(x + 15, - c.r * (r_rect.getSize().y - 20) / (float)255 + 
+        (r_rect.getPosition().y + r_rect.getSize().y  - 20));
 
     g_slider = b_slider = r_slider;
     
-    g_slider.setPosition(x + 85, y + 80);
+    g_slider.setPosition(x + 85, - c.g * (g_rect.getSize().y - 20) / (float)255 + 
+        (g_rect.getPosition().y + g_rect.getSize().y  - 20));
 
-    b_slider.setPosition(x + 155, y + 30);
+    b_slider.setPosition(x + 155, - c.b * (b_rect.getSize().y - 20) / (float)255 + 
+        (b_rect.getPosition().y + b_rect.getSize().y  - 20));
 
     th_rect.setSize(sf::Vector2f(240, 20));
     th_rect.setFillColor(sf::Color::White);
@@ -57,13 +60,14 @@ void build_menu(){
     th_slider.setFillColor(sf::Color::White);
     th_slider.setOutlineColor(sf::Color::Black);
     th_slider.setOutlineThickness(3);
-    th_slider.setPosition(x + 240, y + 20);
+    th_slider.setPosition(x + 270, y + 20);
 
-    rgb_circle.setRadius(30);
-    rgb_circle.setFillColor(sf::Color::Black);
+    rgb_circle.setRadius(5);
+    rgb_circle.setOrigin(5, 5);
+    rgb_circle.setFillColor(c);
     rgb_circle.setOutlineColor(sf::Color(160, 160, 160));
     rgb_circle.setOutlineThickness(3);
-    rgb_circle.setPosition(x + 310, y + 130);
+    rgb_circle.setPosition(x + 360, y + 160);
 }
 
 void draw_menu_items(sf::RenderWindow& window){
