@@ -136,18 +136,19 @@ int main(){
     sf::Color line_color = sf::Color::Black;
     int line_th = 5;
 
-    build_menu(line_color);
+    build_menu(font);
     bool show_menu = 0;
 
     bool th_slider_move = 0;
     bool r_slider_move = 0, g_slider_move = 0, b_slider_move = 0;
-    
+    bool show_line_of_sym = 1;
+
     while (window.isOpen()){
         sf::Event event;
 
         pos_crsr = sf::Mouse::getPosition(window);
 
-        if (manage_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+        if (!show_menu && manage_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
             if (10 <= pos_crsr.x && pos_crsr.x <= 45)
                 minus_text.setOutlineThickness(5);
             else
@@ -167,7 +168,6 @@ int main(){
         }
         else if (palette_sprite.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
             palette_sprite.setScale(0.35, 0.35);
-            palette_sprite.rotate(0.5);
         }
         else{
             palette_sprite.setScale(0.25, 0.25);
@@ -222,18 +222,36 @@ int main(){
                     pos_crsr = sf::Mouse::getPosition(window);
                     sf::Vector2f pos_t = (sf::Vector2f)pos_crsr;
 
-                    if (manage_rect.getGlobalBounds().contains(pos_t)){
+                    if (!show_menu && manage_rect.getGlobalBounds().contains(pos_t)){
                         if (10 <= pos_crsr.x && pos_crsr.x <= 45 && n_plane >= 2){
                             n_plane--;
                             point_list.clear();
                             point_list.push_back(std::vector<point_s>());
                             recalc_trig(sin_table, cos_table, n_plane);
+                            if (n_plane == 9){
+                                manage_rect.setSize(sf::Vector2f(manage_rect.getSize().x - 20, 
+                                    manage_rect.getSize().y));
+                                plus_text.move(-20, 0);
+                                n_text.move(-5, 0);
+                            }
+                            if (n_plane == 19){
+                                n_text.move(5, 0);
+                            }
                         }
                         if (pos_crsr.x >= 75){
                             n_plane++;
                             point_list.clear();
                             point_list.push_back(std::vector<point_s>());
                             recalc_trig(sin_table, cos_table, n_plane);
+                            if (n_plane == 10){
+                                manage_rect.setSize(sf::Vector2f(manage_rect.getSize().x + 20, 
+                                    manage_rect.getSize().y));
+                                plus_text.move(20, 0);
+                                n_text.move(5, 0);
+                            }
+                            if (n_plane == 20){
+                                n_text.move(-5, 0);
+                            }
                         }
                         n_text.setString(std::to_string(n_plane));
                     }
@@ -250,6 +268,13 @@ int main(){
                         }
                         else if (th_rect.getGlobalBounds().contains(pos_t)){
                             th_slider_move = 1;
+                        }
+                        else if (cbox_1_rect.getGlobalBounds().contains(pos_t)){
+                            show_line_of_sym ^= 1;
+                            if (show_line_of_sym)
+                                cbox_1_rect.setFillColor(sf::Color::Green);
+                            else
+                                cbox_1_rect.setFillColor(sf::Color::White);
                         }
                     }
                     else{
@@ -342,7 +367,7 @@ int main(){
             }
         }
 
-        if (n_plane >= 2){
+        if (show_line_of_sym && n_plane >= 2){
             for (int i = 0; i < n_plane; i++){
                 sym_border_line.rotate((float)360 / n_plane);
                 window.draw(sym_border_line);

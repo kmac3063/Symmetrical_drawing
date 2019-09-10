@@ -8,10 +8,13 @@ sf::RectangleShape menu_rect(sf::Vector2f(MENU_WIDTH, MENU_HEIGHT));
 
 sf::RectangleShape r_rect, g_rect, b_rect, th_rect;
 sf::RectangleShape r_slider, g_slider, b_slider, th_slider;
+
+sf::RectangleShape cbox_1_rect;
+sf::Text cbox_1_text;
 sf::CircleShape rgb_circle;
 sf::Color rgb;
 
-void build_menu(const sf::Color& c){
+void build_menu(const sf::Font& font, const sf::Color& c = sf::Color::Black){
     blind_rect.setPosition(0, 0);
     blind_rect.setFillColor(sf::Color(160, 160, 160, 150));
 
@@ -68,6 +71,18 @@ void build_menu(const sf::Color& c){
     rgb_circle.setOutlineColor(sf::Color(160, 160, 160));
     rgb_circle.setOutlineThickness(3);
     rgb_circle.setPosition(x + 360, y + 160);
+
+    cbox_1_rect.setSize(sf::Vector2f(30, 30));
+    cbox_1_rect.setFillColor(sf::Color::Green);
+    cbox_1_rect.setOutlineColor(sf::Color::Black);
+    cbox_1_rect.setOutlineThickness(5);
+    cbox_1_rect.setPosition(x + 240, y + 295);
+
+    cbox_1_text.setFont(font);
+    cbox_1_text.setFillColor(sf::Color::Black);
+    cbox_1_text.setCharacterSize(23);
+    cbox_1_text.setString("Enable line \nof symmetry");
+    cbox_1_text.setPosition(x + 285, y + 285);
 }
 
 void draw_menu_items(sf::RenderWindow& window){
@@ -89,4 +104,7 @@ void draw_menu_items(sf::RenderWindow& window){
     window.draw(th_slider);
 
     window.draw(rgb_circle);
+
+    window.draw(cbox_1_rect);
+    window.draw(cbox_1_text);
 }
