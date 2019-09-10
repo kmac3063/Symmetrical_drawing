@@ -112,7 +112,13 @@ int main(){
     palette_sprite.setTexture(palette_texture);
     palette_sprite.setOrigin(palette_img.getSize().x / 2, palette_img.getSize().y / 2);
     palette_sprite.setScale(0.2, 0.2);
-    palette_sprite.setPosition(40, 80);
+    palette_sprite.setPosition(87, 77);
+
+    sf::Text clear_text("R", font, 55);
+    clear_text.setFillColor(sf::Color::White);
+    clear_text.setOutlineColor(sf::Color::Black);
+    clear_text.setOutlineThickness(4);
+    clear_text.setPosition(15, 45);
 
     sf::Vector2i pos_crsr;
     bool left_m_clicked = 0;
@@ -166,12 +172,17 @@ int main(){
         if (show_menu){
             palette_sprite.rotate(0.5);
         }
-        else if (palette_sprite.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
-            palette_sprite.setScale(0.35, 0.35);
-        }
         else{
             palette_sprite.setScale(0.25, 0.25);
-        }    
+            clear_text.setOutlineColor(sf::Color::Black);
+            
+            if (palette_sprite.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+                palette_sprite.setScale(0.35, 0.35);
+            }
+            else if (clear_text.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+                clear_text.setOutlineColor(sf::Color::Blue);
+            }
+        }
 
         if (show_menu){
             if (r_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
@@ -211,8 +222,6 @@ int main(){
             }
         }
 
-        // std::cout << pos_crsr.x << " " << pos_crsr.y << '\n';
-            
         while(window.pollEvent(event)){
             if (event.type == sf::Event::Closed) window.close();
             if (event.type == sf::Event::MouseButtonPressed){
@@ -254,6 +263,11 @@ int main(){
                             }
                         }
                         n_text.setString(std::to_string(n_plane));
+                    }
+
+                    if (!show_menu && clear_text.getGlobalBounds().contains(pos_t)){
+                        point_list.clear();
+                        point_list.push_back(std::vector<point_s>());
                     }
 
                     if (show_menu && menu_rect.getGlobalBounds().contains(pos_t)){
@@ -381,11 +395,12 @@ int main(){
         window.draw(n_text);
 
         window.draw(palette_sprite);
+        window.draw(clear_text);
 
         if (show_menu){
             draw_menu_items(window);
         }
-
+        
         window.display();
     }
     return 0;
