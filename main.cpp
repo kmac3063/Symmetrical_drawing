@@ -6,26 +6,24 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 800
 
-void set_crs_in_window(sf::Vector2i& a){
-    if (a.x <= 10 || a.x >= WINDOW_WIDTH - 10 ||
-            a.y <= 10 || a.y >= WINDOW_HEIGHT - 10){
-        a.x = std::max(10, a.x);
-        a.x = std::min(a.x, WINDOW_WIDTH - 10);
-        a.y = std::max(10, a.y);
-        a.y = std::min(a.y, WINDOW_HEIGHT - 10);
-    }
-}
+#include "menu.h"
 
-void create_line(sf::RectangleShape& line, const sf::Vector2i& p1, const sf::Vector2i& p2, const int& thickness){
+struct point_s{
+    sf::Vector2i coord;
+    sf::Color color;
+    int thickness;
+};
+
+void create_line(sf::RectangleShape& line, const point_s p1, const point_s p2){
     line.setRotation(0);
 
-    int dx = p1.x - p2.x;
-    int dy = p1.y - p2.y;
+    int dx = p1.coord.x - p2.coord.x;
+    int dy = p1.coord.y - p2.coord.y;
 
-    line.setSize(sf::Vector2f(std::sqrt(dx * dx + dy * dy), thickness));
-    line.setOrigin(0, thickness / 2);
-    line.setPosition(p1.x, p1.y);
-    line.setFillColor(sf::Color::Black);
+    line.setSize(sf::Vector2f(std::sqrt(dx * dx + dy * dy), p2.thickness));
+    line.setOrigin(0, p2.thickness / 2);
+    line.setPosition(p1.coord.x, p1.coord.y);
+    line.setFillColor(p2.color);
 
     float angle;
     if (dx < 0)
@@ -108,12 +106,11 @@ int main(){
     palette_sprite.setScale(0.2, 0.2);
     palette_sprite.setPosition(145, 30);
 
-
     sf::Vector2i pos_crsr;
     bool left_m_clicked = 0;
 
-    std::vector<std::vector<sf::Vector2i> >point_list;
-    point_list.push_back(std::vector<sf::Vector2i>());
+    std::vector<std::vector<point_s> >point_list;
+    point_list.push_back(std::vector<point_s>());
 
     int n_plane = 2;
     
@@ -128,7 +125,15 @@ int main(){
     std::vector<float> sin_table, cos_table;
     recalc_trig(sin_table, cos_table, n_plane);
 
-    bool menu = 0;
+    build_menu();
+    bool show_menu = 0;
+
+    sf::Color line_color = sf::Color::Black;
+    int line_th = 5;
+
+    bool th_slider_move = 0;
+    bool r_slider_move = 0, g_slider_move = 0, b_slider_move = 0;
+    
     while (window.isOpen()){
         sf::Event event;
 
@@ -164,25 +169,47 @@ int main(){
                     left_m_clicked = 1;
 
                     pos_crsr = sf::Mouse::getPosition(window);
+                    sf::Vector2f pos_t = (sf::Vector2f)pos_crsr;
 
-                    if (manage_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+                    if (manage_rect.getGlobalBounds().contains(pos_t)){
                         if (10 <= pos_crsr.x && pos_crsr.x <= 45 && n_plane >= 2){
                             n_plane--;
                             point_list.clear();
-                            point_list.push_back(std::vector<sf::Vector2i>());
+                            point_list.push_back(std::vector<point_s>());
                             recalc_trig(sin_table, cos_table, n_plane);
                         }
                         if (pos_crsr.x >= 75){
                             n_plane++;
                             point_list.clear();
-                            point_list.push_back(std::vector<sf::Vector2i>());
+                            point_list.push_back(std::vector<point_s>());
                             recalc_trig(sin_table, cos_table, n_plane);
                         }
                         n_text.setString(std::to_string(n_plane));
                     }
 
-                    if (palette_sprite.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
-                        menu = 1;
+                    if (show_menu && menu_rect.getGlobalBounds().contains(pos_t)){
+                        if (r_rect.getGlobalBounds().contains(pos_t)){
+                            r_slider.setPosition(r_slider.getPosition().x, pos_t.y);
+                            r_slider_move = 1;
+                        }
+                        else if (g_rect.getGlobalBounds().contains(pos_t)){
+                            g_slider.setPosition(g_slider.getPosition().x, pos_t.y);
+                            g_slider_move = 1;
+                        }
+                        else if (b_rect.getGlobalBounds().contains(pos_t)){
+                            b_slider.setPosition(b_slider.getPosition().x, pos_t.y);
+                            b_slider_move = 1;
+                        }else if (th_rect.getGlobalBounds().contains(pos_t)){
+                            th_slider.setPosition(pos_t.x, th_slider.getPosition().y);
+                            th_slider_move = 1;
+                        }
+                    }
+                    else{
+                        show_menu = 0;
+                    }
+
+                    if (palette_sprite.getGlobalBounds().contains(pos_t)){
+                        show_menu = 1;
                     }
                 }
             }
@@ -190,19 +217,47 @@ int main(){
             if (event.type == sf::Event::MouseButtonReleased){
                 if (event.mouseButton.button == sf::Mouse::Left){
                     left_m_clicked = 0;
-                    point_list.push_back(std::vector<sf::Vector2i>());
+                    point_list.push_back(std::vector<point_s>());
+                    th_slider_move = r_slider_move = g_slider_move = b_slider_move = 0;
                 }
             }
             if (event.type == sf::Event::KeyPressed){
                 if (event.key.code == sf::Keyboard::R){
                     point_list.clear();
-                    point_list.push_back(std::vector<sf::Vector2i>());
+                    point_list.push_back(std::vector<point_s>());
+
+                    show_menu = 0;
                 }
             }
         }
 
         if (left_m_clicked){
-            point_list.back().push_back({pos_crsr.x - WINDOW_WIDTH / 2, pos_crsr.y - WINDOW_HEIGHT / 2});
+            if (!show_menu){
+                point_s point;
+                point.coord.x = pos_crsr.x - WINDOW_WIDTH / 2;
+                point.coord.y = pos_crsr.y - WINDOW_HEIGHT / 2;
+                point.color = line_color;
+                point.thickness = line_th;
+                point_list.back().push_back(point);
+            }
+            else{
+                int y_rgb = std::max(pos_crsr.y, (int)menu_rect.getPosition().y + 20);
+                y_rgb = std::min(y_rgb, (int)menu_rect.getPosition().y + MENU_HEIGHT - 40);
+                if (r_slider_move){
+                    r_slider.setPosition(r_slider.getPosition().x, y_rgb);
+                }
+                else if (g_slider_move){
+                    g_slider.setPosition(g_slider.getPosition().x, y_rgb);
+                }
+                else if (b_slider_move){
+                    b_slider.setPosition(b_slider.getPosition().x, y_rgb);
+                }
+                else if (th_slider_move){
+                    int x_th = std::max(pos_crsr.x, (int)menu_rect.getPosition().x + 240);
+                    x_th = std::min(x_th, (int)menu_rect.getPosition().x + 470);
+                    th_slider.setPosition(x_th, th_slider.getPosition().y);
+                }
+            }
         }
         
         window.clear();
@@ -211,21 +266,21 @@ int main(){
 
         for (int j = 0; j < point_list.size(); j++){
             for (int i = 0; i + 1 < point_list[j].size(); i++){
-                sf::Vector2i p1 = point_list[j][i];
-                sf::Vector2i p2 = point_list[j][i + 1];
-                int x1 = p1.x, x2 = p2.x; 
-                int y1 = p1.y, y2 = p2.y;
+                point_s p1 = point_list[j][i];
+                point_s p2 = point_list[j][i + 1];
+                int x1 = p1.coord.x, x2 = p2.coord.x; 
+                int y1 = p1.coord.y, y2 = p2.coord.y;
 
                 float angle = 0;
                 int i_s = 0, i_c = 0;
                 for (int k = 0; k < n_plane; k++){
                     float s = sin_table[i_s++];
                     float c = cos_table[i_c++];
-                    p1.x = x1 * c - y1 * s + WINDOW_WIDTH / 2;
-                    p1.y = x1 * s + y1 * c + WINDOW_HEIGHT / 2;
-                    p2.x = x2 * c - y2 * s + WINDOW_WIDTH / 2;
-                    p2.y = x2 * s + y2 * c + WINDOW_HEIGHT / 2;
-                    create_line(line, p1, p2, 5);
+                    p1.coord.x = x1 * c - y1 * s + WINDOW_WIDTH / 2;
+                    p1.coord.y = x1 * s + y1 * c + WINDOW_HEIGHT / 2;
+                    p2.coord.x = x2 * c - y2 * s + WINDOW_WIDTH / 2;
+                    p2.coord.y = x2 * s + y2 * c + WINDOW_HEIGHT / 2;
+                    create_line(line, p1, p2);
                     
                     window.draw(line);
                 }
@@ -246,6 +301,11 @@ int main(){
         window.draw(n_text);
 
         window.draw(palette_sprite);
+
+        if (show_menu){
+            draw_menu_items(window);
+        }
+
         window.display();
     }
     return 0;
