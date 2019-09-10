@@ -14,9 +14,7 @@ struct point_s{
     int thickness;
 };
 
-void create_line(sf::RectangleShape& line, const point_s p1, const point_s p2){
-    line.setRotation(0);
-
+void create_line(sf::RectangleShape& line, const point_s& p1, const point_s& p2){
     int dx = p1.coord.x - p2.coord.x;
     int dy = p1.coord.y - p2.coord.y;
 
@@ -27,27 +25,24 @@ void create_line(sf::RectangleShape& line, const point_s p1, const point_s p2){
 
     float angle;
     if (dx < 0)
-        angle = std::atan((float)dy / (float)dx) * 180 / M_PI;
-    if (dx == 0){
+        angle = std::atan((float)dy / (float)dx) * 180 / M_PI + 180 * (dx > 0);
+    else if (dx == 0){
         if (dy < 0)
             angle = 90;
         else
             angle = -90;
     }
-    if (dx > 0)
+    else
         angle = std::atan((float)dy / (float)dx) * 180 / M_PI + 180;
 
-    line.rotate(angle);
+    line.setRotation(angle);
 }
 
 void recalc_trig(std::vector<float>& sin_table, std::vector<float>& cos_table, const int& n_plane){
-    sin_table.clear();
-    cos_table.clear();
-
     float angle = 0;
     for (int i = 0; i < n_plane; i++){
-        sin_table.push_back(std::sin(angle * M_PI / 180));
-        cos_table.push_back(std::cos(angle * M_PI / 180));
+        sin_table[i] = std::sin(angle * M_PI / 180);
+        cos_table[i] = std::cos(angle * M_PI / 180);
         angle += (float)360 / n_plane;
     }
 }
@@ -136,7 +131,7 @@ int main(){
     sym_border_line.setFillColor(sf::Color::Black);
     sym_border_line.setRotation(-90);
 
-    std::vector<float> sin_table, cos_table;
+    std::vector<float> sin_table(500), cos_table(500);
     recalc_trig(sin_table, cos_table, n_plane);
 
     sf::Color line_color = sf::Color::Black;
@@ -169,19 +164,17 @@ int main(){
             minus_text.setOutlineThickness(0);
             plus_text.setOutlineThickness(0);
         }
-        if (show_menu){
+
+        if (show_menu)
             palette_sprite.rotate(0.5);
-        }
         else{
             palette_sprite.setScale(0.25, 0.25);
             clear_text.setOutlineColor(sf::Color::Black);
             
-            if (palette_sprite.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+            if (palette_sprite.getGlobalBounds().contains((sf::Vector2f)pos_crsr))
                 palette_sprite.setScale(0.35, 0.35);
-            }
-            else if (clear_text.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
+            else if (clear_text.getGlobalBounds().contains((sf::Vector2f)pos_crsr))
                 clear_text.setOutlineColor(sf::Color::Blue);
-            }
         }
 
         if (show_menu){
@@ -243,9 +236,8 @@ int main(){
                                 plus_text.move(-20, 0);
                                 n_text.move(-5, 0);
                             }
-                            if (n_plane == 19){
+                            if (n_plane == 19)
                                 n_text.move(5, 0);
-                            }
                         }
                         if (pos_crsr.x >= 75){
                             n_plane++;
@@ -258,9 +250,8 @@ int main(){
                                 plus_text.move(20, 0);
                                 n_text.move(5, 0);
                             }
-                            if (n_plane == 20){
+                            if (n_plane == 20)
                                 n_text.move(-5, 0);
-                            }
                         }
                         n_text.setString(std::to_string(n_plane));
                     }
@@ -271,18 +262,14 @@ int main(){
                     }
 
                     if (show_menu && menu_rect.getGlobalBounds().contains(pos_t)){
-                        if (r_rect.getGlobalBounds().contains(pos_t)){
+                        if (r_rect.getGlobalBounds().contains(pos_t))
                             r_slider_move = 1;
-                        }
-                        else if (g_rect.getGlobalBounds().contains(pos_t)){
+                        else if (g_rect.getGlobalBounds().contains(pos_t))
                             g_slider_move = 1;
-                        }
-                        else if (b_rect.getGlobalBounds().contains(pos_t)){
+                        else if (b_rect.getGlobalBounds().contains(pos_t))
                             b_slider_move = 1;
-                        }
-                        else if (th_rect.getGlobalBounds().contains(pos_t)){
+                        else if (th_rect.getGlobalBounds().contains(pos_t))
                             th_slider_move = 1;
-                        }
                         else if (cbox_1_rect.getGlobalBounds().contains(pos_t)){
                             show_line_of_sym ^= 1;
                             if (show_line_of_sym)
@@ -291,23 +278,21 @@ int main(){
                                 cbox_1_rect.setFillColor(sf::Color::White);
                         }
                     }
-                    else{
+                    else
                         show_menu = 0;
-                    }
 
-                    if (palette_sprite.getGlobalBounds().contains(pos_t)){
+                    if (palette_sprite.getGlobalBounds().contains(pos_t))
                         show_menu = 1;
-                    }
                 }
             }
 
-            if (event.type == sf::Event::MouseButtonReleased){
+            if (event.type == sf::Event::MouseButtonReleased)
                 if (event.mouseButton.button == sf::Mouse::Left){
                     left_m_clicked = 0;
                     point_list.push_back(std::vector<point_s>());
                     th_slider_move = r_slider_move = g_slider_move = b_slider_move = 0;
                 }
-            }
+
             if (event.type == sf::Event::KeyPressed){
                 if (event.key.code == sf::Keyboard::R){
                     point_list.clear();
@@ -348,6 +333,7 @@ int main(){
                     th_slider.setPosition(x_th, th_slider.getPosition().y);
                     line_th = calc_slider_th(th_rect, th_slider);
                 }
+
                 rgb_circle.setRadius(2 * line_th);
                 rgb_circle.setOrigin(2 * line_th, 2 * line_th);
                 rgb_circle.setFillColor(line_color);
@@ -365,11 +351,9 @@ int main(){
                 int x1 = p1.coord.x, x2 = p2.coord.x; 
                 int y1 = p1.coord.y, y2 = p2.coord.y;
 
-                float angle = 0;
-                int i_s = 0, i_c = 0;
                 for (int k = 0; k < n_plane; k++){
-                    float s = sin_table[i_s++];
-                    float c = cos_table[i_c++];
+                    float s = sin_table[k];
+                    float c = cos_table[k];
                     p1.coord.x = x1 * c - y1 * s + WINDOW_WIDTH / 2;
                     p1.coord.y = x1 * s + y1 * c + WINDOW_HEIGHT / 2;
                     p2.coord.x = x2 * c - y2 * s + WINDOW_WIDTH / 2;
@@ -381,12 +365,11 @@ int main(){
             }
         }
 
-        if (show_line_of_sym && n_plane >= 2){
+        if (show_line_of_sym && n_plane >= 2)
             for (int i = 0; i < n_plane; i++){
                 sym_border_line.rotate((float)360 / n_plane);
                 window.draw(sym_border_line);
             }
-        }
         
         window.draw(manage_rect);
 
@@ -397,9 +380,8 @@ int main(){
         window.draw(palette_sprite);
         window.draw(clear_text);
 
-        if (show_menu){
+        if (show_menu)
             draw_menu_items(window);
-        }
         
         window.display();
     }
