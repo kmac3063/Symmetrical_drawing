@@ -57,7 +57,7 @@ float calc_slider_rgb(const sf::RectangleShape& r, const sf::RectangleShape& sl)
 } 
 
 float calc_slider_th(const sf::RectangleShape& r, const sf::RectangleShape& sl){
-    return (1 + (39 / (r.getSize().x - 10)) * (sl.getPosition().x - r.getPosition().x));
+    return (1 + (19 / (r.getSize().x - 10)) * (sl.getPosition().x - r.getPosition().x));
 }
 
 int main(){
@@ -134,7 +134,7 @@ int main(){
     recalc_trig(sin_table, cos_table, n_plane);
 
     sf::Color line_color = sf::Color::Black;
-    int line_th = 5;
+    float line_th = 5;
 
     build_menu(font);
     bool show_menu = 0;
@@ -334,8 +334,8 @@ int main(){
                     th_slider.setPosition(x_th, th_slider.getPosition().y);
                     line_th = calc_slider_th(th_rect, th_slider);
                 }
-                rgb_circle.setRadius(line_th);
-                rgb_circle.setOrigin(line_th, line_th);
+                rgb_circle.setRadius(2 * line_th);
+                rgb_circle.setOrigin(2 * line_th, 2 * line_th);
                 rgb_circle.setFillColor(line_color);
             }
         }
