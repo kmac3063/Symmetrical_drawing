@@ -18,6 +18,7 @@ void build_menu(const sf::Font& font, const sf::Color& c = sf::Color::Black){
     blind_rect.setPosition(0, 0);
     blind_rect.setFillColor(sf::Color(160, 160, 160, 150));
 
+    //Узнаём координаты меню, чтобы рисовать меню, относительно их
     int x = (WINDOW_WIDTH - MENU_WIDTH) / 2;
     int y = (WINDOW_HEIGHT - MENU_HEIGHT) / 2;
 
@@ -42,6 +43,7 @@ void build_menu(const sf::Font& font, const sf::Color& c = sf::Color::Black){
     r_slider.setFillColor(sf::Color::Black);
     r_slider.setOutlineColor(sf::Color(160, 160, 160));
     r_slider.setOutlineThickness(2);
+    //Расчитываем координаты ползунков, когда известно rgb
     r_slider.setPosition(x + 15, - c.r * (r_rect.getSize().y - 20) / (float)255 + 
         (r_rect.getPosition().y + r_rect.getSize().y  - 20));
 
@@ -99,9 +101,9 @@ void draw_menu_items(sf::RenderWindow& window){
     window.draw(b_rect);
     window.draw(b_slider);
 
-
     window.draw(th_rect);
     window.draw(th_slider);
+
 
     window.draw(rgb_circle);
 

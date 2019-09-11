@@ -14,6 +14,7 @@ struct point_s{
     int thickness;
 };
 
+//Создать линию между 2 точками
 void create_line(sf::RectangleShape& line, const point_s& p1, const point_s& p2){
     int dx = p1.coord.x - p2.coord.x;
     int dy = p1.coord.y - p2.coord.y;
@@ -38,6 +39,7 @@ void create_line(sf::RectangleShape& line, const point_s& p1, const point_s& p2)
     line.setRotation(angle);
 }
 
+//Расчитать таблицу синусов и косинусов для поворотов линий
 void recalc_trig(std::vector<float>& sin_table, std::vector<float>& cos_table, const int& n_plane){
     float angle = 0;
     for (int i = 0; i < n_plane; i++){
@@ -47,15 +49,18 @@ void recalc_trig(std::vector<float>& sin_table, std::vector<float>& cos_table, c
     }
 }
 
+//Получить rgb с ползунка 
 float calc_slider_rgb(const sf::RectangleShape& r, const sf::RectangleShape& sl){
     return ((255 / (r.getSize().y - 20)) * (r.getPosition().y + r.getSize().y - sl.getPosition().y - 20));
 } 
 
+//Получить толщину линий с ползунка
 float calc_slider_th(const sf::RectangleShape& r, const sf::RectangleShape& sl){
     return (1 + (19 / (r.getSize().x - 10)) * (sl.getPosition().x - r.getPosition().x));
 }
 
 int main(){
+    //init
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Symmetry");
     window.setFramerateLimit(60);
     srand(time(NULL));
@@ -118,7 +123,7 @@ int main(){
     sf::Vector2i pos_crsr;
     bool left_m_clicked = 0;
 
-    std::vector<std::vector<point_s> >point_list;
+    std::vector<std::vector<point_s> >point_list;//Храним вектора векторов, чтобы прорисовывать линии
     point_list.push_back(std::vector<point_s>());
 
     int n_plane = 2;
@@ -131,13 +136,13 @@ int main(){
     sym_border_line.setFillColor(sf::Color::Black);
     sym_border_line.setRotation(-90);
 
-    std::vector<float> sin_table(500), cos_table(500);
+    std::vector<float> sin_table(500), cos_table(500); // таблица предрасчитанных косинусов и синусов
     recalc_trig(sin_table, cos_table, n_plane);
 
     sf::Color line_color = sf::Color::Black;
     float line_th = 5;
 
-    build_menu(font);
+    build_menu(font);//Расставляем кнопки по меню 
     bool show_menu = 0;
 
     bool th_slider_move = 0;
@@ -177,7 +182,7 @@ int main(){
                 clear_text.setOutlineColor(sf::Color::Blue);
         }
 
-        if (show_menu){
+        if (show_menu){ // подсветить ползунок, если навели на него
             if (r_rect.getGlobalBounds().contains((sf::Vector2f)pos_crsr)){
                 r_slider.setOutlineColor(sf::Color(128, 170, 255));
                 r_slider.setOutlineThickness(4);
@@ -225,32 +230,32 @@ int main(){
                     sf::Vector2f pos_t = (sf::Vector2f)pos_crsr;
 
                     if (!show_menu && manage_rect.getGlobalBounds().contains(pos_t)){
-                        if (10 <= pos_crsr.x && pos_crsr.x <= 45 && n_plane >= 2){
+                        if (10 <= pos_crsr.x && pos_crsr.x <= 45 && n_plane >= 2){ //Если уменьшаем количество полуплоскостей
                             n_plane--;
                             point_list.clear();
                             point_list.push_back(std::vector<point_s>());
                             recalc_trig(sin_table, cos_table, n_plane);
-                            if (n_plane == 9){
+                            if (n_plane == 9){ //Уменьшаем рамку до нужного размера
                                 manage_rect.setSize(sf::Vector2f(manage_rect.getSize().x - 20, 
                                     manage_rect.getSize().y));
                                 plus_text.move(-20, 0);
                                 n_text.move(-5, 0);
                             }
-                            if (n_plane == 19)
+                            if (n_plane == 19)//Увеличиваем рамку 
                                 n_text.move(5, 0);
                         }
-                        if (pos_crsr.x >= 75){
+                        if (pos_crsr.x >= 75){ //Если увеличиваем количество полуплоскостей
                             n_plane++;
                             point_list.clear();
                             point_list.push_back(std::vector<point_s>());
                             recalc_trig(sin_table, cos_table, n_plane);
-                            if (n_plane == 10){
+                            if (n_plane == 10){ //Увеличиваем рамку до нужного размера
                                 manage_rect.setSize(sf::Vector2f(manage_rect.getSize().x + 20, 
                                     manage_rect.getSize().y));
                                 plus_text.move(20, 0);
                                 n_text.move(5, 0);
                             }
-                            if (n_plane == 20)
+                            if (n_plane == 20) //Уменьшаем рамку
                                 n_text.move(-5, 0);
                         }
                         n_text.setString(std::to_string(n_plane));
@@ -261,7 +266,8 @@ int main(){
                         point_list.push_back(std::vector<point_s>());
                     }
 
-                    if (show_menu && menu_rect.getGlobalBounds().contains(pos_t)){
+                    if (show_menu && menu_rect.getGlobalBounds().contains(pos_t)){ 
+                        // Если кликаем на ползунок/жмём на чекбокс
                         if (r_rect.getGlobalBounds().contains(pos_t))
                             r_slider_move = 1;
                         else if (g_rect.getGlobalBounds().contains(pos_t))
@@ -278,7 +284,7 @@ int main(){
                                 cbox_1_rect.setFillColor(sf::Color::White);
                         }
                     }
-                    else
+                    else //Если кликнули вне меню
                         show_menu = 0;
 
                     if (palette_sprite.getGlobalBounds().contains(pos_t))
@@ -306,15 +312,17 @@ int main(){
         if (left_m_clicked){
             if (!show_menu){
                 point_s point;
-                point.coord.x = pos_crsr.x - WINDOW_WIDTH / 2;
+                point.coord.x = pos_crsr.x - WINDOW_WIDTH / 2; //Ставим начало системы координат в центр экрана
                 point.coord.y = pos_crsr.y - WINDOW_HEIGHT / 2;
                 point.color = line_color;
                 point.thickness = line_th;
-                point_list.back().push_back(point);
+                point_list.back().push_back(point);           // и закидываем в вектор
             }
             else{
+                // Не даём ползункам выйти за свои границы
                 int y_rgb = std::max(pos_crsr.y, (int)menu_rect.getPosition().y + 20);
                 y_rgb = std::min(y_rgb, (int)menu_rect.getPosition().y + MENU_HEIGHT - 40);
+                // Обработка движения ползунков
                 if (r_slider_move){
                     r_slider.setPosition(r_slider.getPosition().x, y_rgb);
                     line_color.r = calc_slider_rgb(r_rect, r_slider);
@@ -334,6 +342,7 @@ int main(){
                     line_th = calc_slider_th(th_rect, th_slider);
                 }
 
+                // Отрисовываем образованную линию для наглядности
                 rgb_circle.setRadius(2 * line_th);
                 rgb_circle.setOrigin(2 * line_th, 2 * line_th);
                 rgb_circle.setFillColor(line_color);
@@ -351,6 +360,8 @@ int main(){
                 int x1 = p1.coord.x, x2 = p2.coord.x; 
                 int y1 = p1.coord.y, y2 = p2.coord.y;
 
+                //Поворачиваем каждую точку n_plane раз под нужным углом и возвращаем
+                //начало системы координат в точку (0; 0)
                 for (int k = 0; k < n_plane; k++){
                     float s = sin_table[k];
                     float c = cos_table[k];
@@ -365,12 +376,13 @@ int main(){
             }
         }
 
-        if (show_line_of_sym && n_plane >= 2)
+        if (show_line_of_sym && n_plane >= 2) // Отрисовка линий симметрии
             for (int i = 0; i < n_plane; i++){
                 sym_border_line.rotate((float)360 / n_plane);
                 window.draw(sym_border_line);
             }
         
+        //Отрисовка
         window.draw(manage_rect);
 
         window.draw(minus_text);
